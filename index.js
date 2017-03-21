@@ -57,13 +57,16 @@ module.exports = function (fn, options) {
         }
 
         var webpackRequireName = wrapperSignature[1];
-        if (wrapperFuncString.indexOf(webpackRequireName + '(' + webworkifyWebpackModuleId + ')') > -1) {
+        var isWebworkifyWebpackRequired = wrapperFuncString.match(
+            new RegExp(quoteRegExp(webpackRequireName) + '\\((/\\*.*?\\*/)?\\s*' + quoteRegExp(webworkifyWebpackModuleId) + '\\s*\\)', 'g')
+        );
+        if (isWebworkifyWebpackRequired) {
             // find all calls that look like __webpack_require__(\d+), and aren't webworkify-webpack
-            var re = new RegExp(quoteRegExp(webpackRequireName) + '\\((\\d+)\\)', 'g');
+            var re = new RegExp(quoteRegExp(webpackRequireName) + '\\((/\\*.*?\\*/)?\\s*(\\d+)\\s*\\)', 'g');
             var match;
             while (match = re.exec(wrapperFuncString)) {
-                if (match[1] != ('' + webworkifyWebpackModuleId)) {
-                    potentialFnModuleIds.push(match[1]);
+                if (match[2] != ('' + webworkifyWebpackModuleId)) {
+                    potentialFnModuleIds.push(match[2]);
                 }
             }
         }
